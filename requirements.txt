@@ -1,0 +1,9 @@
+pandas
+numpy
+faker
+pyyaml
+pytest
+pyspark
+delta-spark
+dbt-core
+dbt-databricks
