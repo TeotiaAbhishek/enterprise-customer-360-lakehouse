@@ -1,10 +1,12 @@
 from pathlib import Path
 from datetime import datetime
 import uuid
+import time
+from pyspark.sql import Row
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp, input_file_name, lit, sha2, concat_ws
-from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType, LongType, TimestampType
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -109,42 +111,141 @@ def get_loyalty_accounts_schema():
         StructField("source_system", StringType(), True),
     ])
 
+def get_ingestion_log_schema():
+    return StructType([
+        StructField("run_id", StringType(), False),
+        StructField("source_name", StringType(), False),
+        StructField("batch_id", StringType(), False),
+        StructField("rows_read", LongType(), True),
+        StructField("rows_written", LongType(), True),
+        StructField("start_time", TimestampType(), True),
+        StructField("end_time", TimestampType(), True),
+        StructField("duration_seconds", DoubleType(), True),
+        StructField("status", StringType(), True),
+        StructField("error_message", StringType(), True),
+    ])
+
+def write_ingestion_log(
+    spark,
+    run_id,
+    source_name,
+    batch_id,
+    rows_read,
+    rows_written,
+    start_time,
+    end_time,
+    duration_seconds,
+    status,
+    error_message=None
+):
+    log_path = str(PROJECT_ROOT / "data" / "metadata" / "ingestion_log")
+
+    log_row = Row(
+        run_id=run_id,
+        source_name=source_name,
+        batch_id=batch_id,
+        rows_read=rows_read,
+        rows_written=rows_written,
+        start_time=start_time,
+        end_time=end_time,
+        duration_seconds=duration_seconds,
+        status=status,
+        error_message=error_message
+    )
+
+    log_df = spark.createDataFrame(
+        [log_row],
+        schema=get_ingestion_log_schema()
+    )
+
+    (
+        log_df
+        .write
+        .mode("append")
+        .parquet(log_path)
+    )
 
 def ingest_csv_to_bronze(spark, source_name, schema):
+    run_id = str(uuid.uuid4())
     batch_id = str(uuid.uuid4())
 
     input_path = str(LANDING_BASE / source_name / "*.csv")
     output_path = str(BRONZE_BASE / source_name)
 
+    start_time = datetime.now()
+    start_perf = time.time()
+
     print(f"Ingesting source: {source_name}")
     print(f"Input path: {input_path}")
     print(f"Output path: {output_path}")
+    print(f"Run ID: {run_id}")
     print(f"Batch ID: {batch_id}")
 
-    df = (
-        spark.read
-        .option("header", True)
-        .schema(schema)
-        .csv(input_path)
-    )
+    try:
+        df = (
+            spark.read
+            .option("header", True)
+            .schema(schema)
+            .csv(input_path)
+        )
 
-    df_with_metadata = (
-        df
-        .withColumn("_ingestion_timestamp", current_timestamp())
-        .withColumn("_source_file", input_file_name())
-        .withColumn("_batch_id", lit(batch_id))
-        .withColumn("_record_hash", sha2(concat_ws("||", *df.columns), 256))
-    )
+        rows_read = df.count()
 
-    (
-        df_with_metadata
+        df_with_metadata = (
+            df
+            .withColumn("_ingestion_timestamp", current_timestamp())
+            .withColumn("_source_file", input_file_name())
+            .withColumn("_batch_id", lit(batch_id))
+            .withColumn("_record_hash", sha2(concat_ws("||", *df.columns), 256))
+        )
+
+        (
+            df_with_metadata
             .write
             .mode("append")
             .parquet(output_path)
-    )
+        )
 
-    print(f"Completed Bronze ingestion for {source_name}")
-    print(f"Rows ingested: {df_with_metadata.count():,}")
+        rows_written = df_with_metadata.count()
+        end_time = datetime.now()
+        duration_seconds = round(time.time() - start_perf, 2)
+
+        write_ingestion_log(
+            spark=spark,
+            run_id=run_id,
+            source_name=source_name,
+            batch_id=batch_id,
+            rows_read=rows_read,
+            rows_written=rows_written,
+            start_time=start_time,
+            end_time=end_time,
+            duration_seconds=duration_seconds,
+            status="SUCCESS"
+        )
+
+        print(f"Completed Bronze ingestion for {source_name}")
+        print(f"Rows read: {rows_read:,}")
+        print(f"Rows written: {rows_written:,}")
+
+    except Exception as e:
+        end_time = datetime.now()
+        duration_seconds = round(time.time() - start_perf, 2)
+
+        write_ingestion_log(
+            spark=spark,
+            run_id=run_id,
+            source_name=source_name,
+            batch_id=batch_id,
+            rows_read=0,
+            rows_written=0,
+            start_time=start_time,
+            end_time=end_time,
+            duration_seconds=duration_seconds,
+            status="FAILED",
+            error_message=str(e)
+        )
+
+        raise
 
 
 def main():
