@@ -68,11 +68,7 @@ def main():
         dq_df
         .withColumn(
             "rejection_rate_percent",
-            round(
-                (col("silver_rejected_rows") / col("total_processed_rows")) * 100,
-                2
-            )
-        )
+            round((col("silver_rejected_rows") / col("total_processed_rows")) * 100,2))
         .withColumn("_gold_processed_at", current_timestamp())
     )
 
