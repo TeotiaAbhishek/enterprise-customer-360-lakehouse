@@ -1,9 +1,27 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
-data/landing/
-data/bronze/
-data/silver/
-data/gold/
+*.py[cod]
+.venv/
 .env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Spark
+.metastore_db/
+spark-warehouse/
+
+# Logs
+logs/
+*.log
+
+# Pytest
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
