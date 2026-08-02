@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: bronze
+    catalog: workspace
+    schema: bronze
+
+    tables:
+      - name: customers
+        description: "Raw customer records ingested into the Bronze layer."
+
+        columns:
+          - name: customer_id
+            description: "Customer identifier."
+            tests:
+              - not_null
