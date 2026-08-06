@@ -1,0 +1,78 @@
+{{ config(
+    materialized = 'ephemeral'
+) }}
+
+with ranked as (
+
+    select
+        *,
+        row_number() over (
+            partition by customer_id
+            order by updated_at desc nulls last
+        ) as row_num
+
+    from {{ ref('stg_customers') }}
+
+),
+
+deduplicated as (
+
+    select
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        gender,
+        status,
+        date_of_birth,
+        signup_date,
+        created_at,
+        updated_at
+
+    from ranked
+    where row_num = 1
+
+),
+
+validated as (
+
+    select
+        *,
+
+        case
+            when customer_id is null then false
+            when email is null then false
+            when email not rlike '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' then false
+            when status is null then false
+            when status not in (
+                'active',
+                'inactive',
+                'blocked',
+                'pending'
+            ) then false
+            else true
+        end as is_valid,
+
+        case
+            when customer_id is null then 'Missing customer_id'
+            when email is null then 'Missing email'
+            when email not rlike '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
+                then 'Invalid email format'
+            when status is null then 'Missing status'
+            when status not in (
+                'active',
+                'inactive',
+                'blocked',
+                'pending'
+            ) then 'Invalid status'
+            else null
+        end as rejection_reason,
+
+        current_timestamp() as silver_processed_at
+
+    from deduplicated
+
+)
+
+select *
+from validated

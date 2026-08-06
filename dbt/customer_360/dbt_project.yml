@@ -27,4 +27,11 @@ models:
   customer_360:
     staging:
       +materialized: view
+      +schema: staging
+
+    intermediate:
+      +materialized: ephemeral
+
+    silver:
+      +materialized: table
       +schema: silver
