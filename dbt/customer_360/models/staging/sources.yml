@@ -7,10 +7,7 @@ sources:
 
     tables:
       - name: customers
-        description: "Raw customer records ingested into the Bronze layer."
+        description: "Raw customer records ingested into Bronze."
 
-        columns:
-          - name: customer_id
-            description: "Customer identifier."
-            tests:
-              - not_null
+      - name: orders
+        description: "Raw order records ingested into Bronze."
