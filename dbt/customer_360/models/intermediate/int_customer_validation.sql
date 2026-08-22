@@ -27,7 +27,8 @@ deduplicated as (
         date_of_birth,
         signup_date,
         created_at,
-        updated_at
+        updated_at,
+        source_system
 
     from ranked
     where row_num = 1
@@ -38,6 +39,11 @@ validated as (
 
     select
         *,
+
+        case
+            when updated_at > current_timestamp() then true
+            else false
+        end as has_future_updated_at,
 
         case
             when customer_id is null then false
@@ -54,17 +60,17 @@ validated as (
         end as is_valid,
 
         case
-            when customer_id is null then 'Missing customer_id'
-            when email is null then 'Missing email'
+            when customer_id is null then 'customer_id is null'
+            when email is null then 'email is null'
             when email not rlike '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
-                then 'Invalid email format'
-            when status is null then 'Missing status'
+                then 'invalid email'
+            when status is null then 'status is null'
             when status not in (
                 'active',
                 'inactive',
                 'blocked',
                 'pending'
-            ) then 'Invalid status'
+            ) then 'invalid status'
             else null
         end as rejection_reason,
 
@@ -74,5 +80,21 @@ validated as (
 
 )
 
-select *
+select
+    customer_id,
+    first_name,
+    last_name,
+    email,
+    gender,
+    status,
+    date_of_birth,
+    signup_date,
+    created_at,
+    updated_at,
+    source_system,
+    has_future_updated_at,
+    is_valid,
+    rejection_reason,
+    silver_processed_at
+
 from validated

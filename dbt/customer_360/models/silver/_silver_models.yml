@@ -1,6 +1,11 @@
 version: 2
 
 models:
+
+  # ============================================================
+  # CUSTOMERS
+  # ============================================================
+
   - name: silver_customers
     description: "Validated and deduplicated customer records."
 
@@ -33,5 +38,331 @@ models:
 
     columns:
       - name: rejection_reason
+        description: "Reason the customer record failed Silver validation."
+        data_tests:
+          - not_null
+
+
+  # ============================================================
+  # ORDERS
+  # ============================================================
+
+  - name: silver_orders
+    description: "Validated and deduplicated order records."
+
+    columns:
+      - name: order_id
+        description: "Unique order identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Customer associated with the order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_customers')
+                field: customer_id
+
+      - name: order_status
+        description: "Standardised order status."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - placed
+                  - paid
+                  - shipped
+                  - delivered
+                  - cancelled
+                  - returned
+
+      - name: sales_channel
+        description: "Channel through which the order was placed."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - web
+                  - mobile
+                  - store
+
+      - name: order_amount
+        description: "Order monetary value."
+        data_tests:
+          - not_null
+
+  - name: rejected_orders
+    description: "Order records rejected during Silver validation."
+
+    columns:
+      - name: rejection_reason
+        description: "Reason the order record failed Silver validation."
+        data_tests:
+          - not_null
+
+
+  # ============================================================
+  # ADDRESSES
+  # ============================================================
+
+  - name: silver_addresses
+    description: "Validated and deduplicated customer address records."
+
+    columns:
+      - name: address_id
+        description: "Unique address identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Customer associated with the address."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_customers')
+                field: customer_id
+
+      - name: state
+        description: "Standardised Australian state or territory."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - NSW
+                  - VIC
+                  - QLD
+                  - WA
+                  - SA
+                  - TAS
+                  - ACT
+                  - NT
+
+      - name: postcode
+        description: "Four-digit Australian postcode."
+        data_tests:
+          - not_null
+
+  - name: rejected_addresses
+    description: "Address records rejected during Silver validation."
+
+    columns:
+      - name: rejection_reason
+        description: "Reason the address record failed Silver validation."
+        data_tests:
+          - not_null
+
+
+  # ============================================================
+  # PAYMENTS
+  # ============================================================
+
+  - name: silver_payments
+    description: "Validated and deduplicated payment records."
+
+    columns:
+      - name: payment_id
+        description: "Unique payment identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Customer associated with the payment."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_customers')
+                field: customer_id
+
+      - name: order_id
+        description: "Order associated with the payment."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_orders')
+                field: order_id
+
+      - name: payment_status
+        description: "Standardised payment status."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - success
+                  - failed
+                  - pending
+                  - refunded
+
+      - name: payment_method
+        description: "Standardised payment method."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - card
+                  - paypal
+                  - apple_pay
+                  - google_pay
+                  - bank_transfer
+
+      - name: payment_amount
+        description: "Payment monetary value."
+        data_tests:
+          - not_null
+
+  - name: rejected_payments
+    description: "Payment records rejected during Silver validation."
+
+    columns:
+      - name: rejection_reason
+        description: "Reason the payment record failed Silver validation."
+        data_tests:
+          - not_null
+
+  # ============================================================
+  # SUPPORT TICKETS
+  # ============================================================
+
+  - name: silver_support_tickets
+    description: "Validated and deduplicated support ticket records."
+
+    columns:
+      - name: ticket_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_customers')
+                field: customer_id
+
+      - name: ticket_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - open
+                  - in_progress
+                  - resolved
+                  - closed
+
+      - name: priority
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - low
+                  - medium
+                  - high
+                  - urgent
+
+      - name: channel
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - email
+                  - phone
+                  - chat
+                  - web
+
+      - name: category
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - payment_issue
+                  - delivery_delay
+                  - account_access
+                  - refund_request
+                  - product_query
+                  - loyalty_query
+                  - complaint
+
+  - name: rejected_support_tickets
+    description: "Support ticket records rejected during Silver validation."
+
+    columns:
+      - name: rejection_reason
+        data_tests:
+          - not_null
+
+  # ============================================================
+  # LOYALTY ACCOUNTS
+  # ============================================================
+
+  - name: silver_loyalty_accounts
+    description: "Validated and deduplicated loyalty account records."
+
+    columns:
+      - name: loyalty_account_id
+        description: "Unique loyalty account identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Customer associated with the loyalty account."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_customers')
+                field: customer_id
+
+      - name: tier
+        description: "Standardised loyalty tier."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - bronze
+                  - silver
+                  - gold
+                  - platinum
+
+      - name: loyalty_status
+        description: "Current loyalty account status."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - active
+                  - inactive
+                  - suspended
+
+      - name: points_balance
+        description: "Current loyalty points balance."
+        data_tests:
+          - not_null
+
+  - name: rejected_loyalty_accounts
+    description: "Loyalty account records rejected during Silver validation."
+
+    columns:
+      - name: rejection_reason
+        description: "Reason the loyalty account failed Silver validation."
         data_tests:
           - not_null

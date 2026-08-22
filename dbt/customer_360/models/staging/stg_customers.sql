@@ -12,6 +12,7 @@ select
     cast(date_of_birth as date) as date_of_birth,
     cast(signup_date as date) as signup_date,
     cast(created_at as timestamp) as created_at,
-    cast(updated_at as timestamp) as updated_at
+    cast(updated_at as timestamp) as updated_at,
+    lower(trim(source_system)) as source_system
 
 from {{ source('bronze', 'customers') }}

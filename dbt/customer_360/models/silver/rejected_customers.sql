@@ -13,8 +13,11 @@ select
     signup_date,
     created_at,
     updated_at,
+    source_system,
+    has_future_updated_at,
     silver_processed_at,
     rejection_reason
-    
+
 from {{ ref('int_customer_validation') }}
-where not is_valid
+
+where is_valid = false

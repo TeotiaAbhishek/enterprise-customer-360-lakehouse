@@ -11,3 +11,15 @@ sources:
 
       - name: orders
         description: "Raw order records ingested into Bronze."
+
+      - name: addresses
+        description: "Raw address records ingested into Bronze."
+      
+      - name: payments
+        description: "Raw payment records ingested into Bronze."
+        
+      - name: support_tickets
+        description: "Raw support ticket records ingested into Bronze."
+      
+      - name: loyalty_accounts
+        description: "Raw loyalty account records ingested into Bronze."
