@@ -25,3 +25,14 @@ logs/
 
 # Jupyter
 .ipynb_checkpoints/
+# Generated pipeline data (recreate with scripts/run_local_pipeline.sh)
+data/
+
+# Spark CSV writer side files
+dashboards/powerbi_data/**/_SUCCESS
+dashboards/powerbi_data/**/.*.crc
+
+# dbt
+dbt/customer_360/target/
+dbt/customer_360/dbt_packages/
+dbt/customer_360/logs/

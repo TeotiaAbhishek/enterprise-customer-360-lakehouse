@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from datetime import datetime, timedelta
 import random
 
@@ -14,7 +15,8 @@ random.seed(42)
 OUTPUT_PATH = Path("data/landing/crm_customers")
 OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
-NUM_CUSTOMERS = 100_000
+# Override with NUM_CUSTOMERS=2000 for a quick local run
+NUM_CUSTOMERS = int(os.environ.get("NUM_CUSTOMERS", 100_000))
 
 BAD_EMAIL_RATE = 0.01
 NULL_PHONE_RATE = 0.01

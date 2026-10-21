@@ -1,0 +1,23 @@
+# Copy to ~/.dbt/profiles.yml (or pass --profiles-dir) and fill in your values.
+customer_360:
+  target: databricks
+  outputs:
+
+    # Databricks SQL warehouse with Unity Catalog
+    databricks:
+      type: databricks
+      catalog: workspace
+      schema: default
+      host: "{{ env_var('DATABRICKS_HOST', '') }}"       # e.g. dbc-xxxx.cloud.databricks.com
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH', '') }}" # e.g. /sql/1.0/warehouses/xxxx
+      token: "{{ env_var('DATABRICKS_TOKEN', '') }}"
+      threads: 4
+
+    # Local Spark session, no cloud account needed (pip install "dbt-spark[session]")
+    # Run scripts/register_local_bronze.py first to create the bronze tables.
+    local:
+      type: spark
+      method: session
+      schema: default
+      host: NA
+      threads: 1

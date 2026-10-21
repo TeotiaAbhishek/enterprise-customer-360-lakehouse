@@ -199,10 +199,11 @@ def ingest_csv_to_bronze(spark, source_name, schema):
             .withColumn("_record_hash", sha2(concat_ws("||", *df.columns), 256))
         )
 
+        # Overwrite so re-running the pipeline is idempotent (matches the Databricks Bronze notebook)
         (
             df_with_metadata
             .write
-            .mode("append")
+            .mode("overwrite")
             .parquet(output_path)
         )
 
