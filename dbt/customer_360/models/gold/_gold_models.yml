@@ -1,0 +1,93 @@
+version: 2
+
+models:
+
+  - name: customer_360
+    description: "One row per valid customer, joining profile, primary address, order, payment, support and loyalty activity."
+
+    columns:
+      - name: customer_id
+        description: "Unique customer identifier."
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('silver_customers')
+                field: customer_id
+
+      - name: total_orders
+        description: "Count of valid orders placed by the customer."
+        data_tests:
+          - not_null
+
+      - name: total_revenue
+        description: "Sum of order_amount for paid, shipped and delivered orders."
+        data_tests:
+          - not_null
+
+      - name: successful_payment_count
+        description: "Count of payments with status success."
+        data_tests:
+          - not_null
+
+      - name: support_ticket_count
+        description: "Count of valid support tickets raised by the customer."
+        data_tests:
+          - not_null
+
+      - name: loyalty_tier
+        description: "Loyalty tier, null when the customer has no loyalty account."
+
+      - name: points_balance
+        description: "Loyalty points balance, zero when the customer has no loyalty account."
+        data_tests:
+          - not_null
+
+  - name: customer_kpi_summary
+    description: "Single-row business KPI summary built from customer_360."
+
+    columns:
+      - name: total_customers
+        description: "Total number of customers in customer_360."
+        data_tests:
+          - not_null
+
+      - name: total_revenue
+        description: "Total recognised revenue across all customers."
+        data_tests:
+          - not_null
+
+  - name: data_quality_summary
+    description: "Row counts and rejection rates per source, from Bronze through Silver."
+
+    columns:
+      - name: source_name
+        description: "Source dataset name."
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values:
+                  - customers
+                  - addresses
+                  - orders
+                  - payments
+                  - support_tickets
+                  - loyalty_accounts
+
+      - name: bronze_rows
+        description: "Rows in the Bronze source table."
+
+      - name: silver_valid_rows
+        description: "Rows that passed Silver validation."
+
+      - name: silver_rejected_rows
+        description: "Rows that failed Silver validation and were routed to a rejected_* table."
+
+      - name: duplicate_rows_removed
+        description: "Bronze rows removed by deduplication on the primary key."
+
+      - name: rejection_rate_percent
+        description: "Rejected rows as a percentage of deduplicated rows."

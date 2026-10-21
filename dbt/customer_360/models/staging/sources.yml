@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: bronze
-    catalog: workspace
+    database: "{{ var('bronze_catalog', 'workspace') if target.type == 'databricks' else none }}"
     schema: bronze
 
     tables:
