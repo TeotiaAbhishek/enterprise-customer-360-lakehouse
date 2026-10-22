@@ -38,4 +38,5 @@ cd dbt/customer_360
 rm -rf metastore_db spark-warehouse
 [[ -f profiles.yml ]] || cp profiles.example.yml profiles.yml
 "$PYTHON" ../../scripts/register_local_bronze.py
-dbt build --profiles-dir . --target local
+# snapshots need Delta MERGE, which the local Spark session doesn't have
+dbt build --profiles-dir . --target local --exclude resource_type:snapshot
