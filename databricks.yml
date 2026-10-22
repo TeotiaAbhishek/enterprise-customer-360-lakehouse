@@ -1,0 +1,16 @@
+bundle:
+  name: customer_360
+
+include:
+  - resources/*.yml
+
+variables:
+  warehouse_id:
+    description: SQL warehouse that runs dbt
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-cdb17c9c-f080.cloud.databricks.com
