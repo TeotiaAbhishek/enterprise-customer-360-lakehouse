@@ -12,6 +12,7 @@ select
     lower(trim(channel)) as channel,
     lower(trim(category)) as category,
     trim(agent_id) as agent_id,
-    lower(trim(source_system)) as source_system
+    lower(trim(source_system)) as source_system,
+    _ingestion_timestamp
 
 from {{ source('bronze', 'support_tickets') }}

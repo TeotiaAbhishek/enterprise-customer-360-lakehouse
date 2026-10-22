@@ -12,6 +12,7 @@ select
     lower(trim(sales_channel)) as sales_channel,
     cast(created_at as date) as created_at,
     cast(updated_at as date) as updated_at,
-    lower(trim(source_system)) as source_system
+    lower(trim(source_system)) as source_system,
+    _ingestion_timestamp
 
 from {{ source('bronze', 'orders') }}

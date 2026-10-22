@@ -8,7 +8,10 @@ with ranked as (
         *,
         row_number() over (
             partition by order_id
-            order by updated_at desc nulls last
+            order by 
+                case when updated_at > current_timestamp() then 1 else 0 end,
+                updated_at desc nulls last,
+                _ingestion_timestamp desc
         ) as row_num
 
     from {{ ref('stg_orders') }}
@@ -27,7 +30,8 @@ deduplicated as (
         sales_channel,
         created_at,
         updated_at,
-        source_system
+        source_system,
+        _ingestion_timestamp
 
     from ranked
     where row_num = 1
@@ -134,6 +138,7 @@ select
     has_future_updated_at,
     is_valid,
     rejection_reason,
-    silver_processed_at
+    silver_processed_at,
+    _ingestion_timestamp
 
 from validated

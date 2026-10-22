@@ -8,7 +8,10 @@ with ranked as (
         *,
         row_number() over (
             partition by loyalty_account_id
-            order by updated_at desc nulls last
+            order by
+                case when updated_at > current_timestamp() then 1 else 0 end, 
+                updated_at desc nulls last,
+                _ingestion_timestamp desc
         ) as row_num
 
     from {{ ref('stg_loyalty_accounts') }}
