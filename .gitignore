@@ -36,3 +36,4 @@ dashboards/powerbi_data/**/.*.crc
 dbt/customer_360/target/
 dbt/customer_360/dbt_packages/
 dbt/customer_360/logs/
+.databricks/

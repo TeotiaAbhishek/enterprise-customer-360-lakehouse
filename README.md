@@ -157,6 +157,18 @@ This builds `workspace.staging`, `workspace.silver` and `workspace.gold`. The Br
 
 5. Open `dashboards/enterprise360.pbix` in Power BI Desktop (it reads the exported Gold CSVs).
 
+### Deploy the scheduled job (Databricks Asset Bundle)
+
+The Bronze ingestion and dbt build run as one job, `customer_360_workflow`, defined in `databricks.yml` and `resources/`.
+
+```bash
+export BUNDLE_VAR_alert_email="you@example.com"
+databricks bundle validate -t dev
+databricks bundle deploy -t dev     # writes to the dev catalog, schedule paused
+databricks bundle run -t dev customer_360_workflow
+
+databricks bundle deploy -t prod    # writes to workspace, runs daily at 06:00 Sydney
+```
 ---
 
 ## Repository layout
