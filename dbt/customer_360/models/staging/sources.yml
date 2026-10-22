@@ -4,6 +4,11 @@ sources:
   - name: bronze
     database: "{{ var('bronze_catalog', 'workspace') if target.type == 'databricks' else none }}"
     schema: bronze
+    config:
+      loaded_at_field: _ingestion_timestamp
+      freshness:
+        warn_after: {count: 24, period: hour}
+        error_after: {count: 48, period: hour}
 
     tables:
       - name: customers
