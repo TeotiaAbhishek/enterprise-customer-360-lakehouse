@@ -8,7 +8,10 @@ with ranked as (
         *,
         row_number() over (
             partition by ticket_id
-            order by ticket_created_at desc nulls last
+            order by
+                case when ticket_created_at > current_timestamp() then 1 else 0 end, 
+                ticket_created_at desc nulls last,
+                _ingestion_timestamp desc
         ) as row_num
 
     from {{ ref('stg_support_tickets') }}

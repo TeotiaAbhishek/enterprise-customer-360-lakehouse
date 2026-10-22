@@ -1,5 +1,7 @@
 {{ config(
-    materialized = 'table'
+    materialized = 'incremental',
+    unique_key = 'payment_id',
+    incremental_strategy = 'merge' if target.type == 'databricks' else 'append'
 ) }}
 
 select
@@ -17,8 +19,12 @@ select
     customer_exists,
     order_exists,
     has_future_updated_at,
-    silver_processed_at
+    silver_processed_at,
+    _ingestion_timestamp
 
 from {{ ref('int_payment_validation') }}
 
 where is_valid = true
+{% if is_incremental() %}
+  and _ingestion_timestamp > (select max(_ingestion_timestamp) from {{ this }})
+{% endif %}

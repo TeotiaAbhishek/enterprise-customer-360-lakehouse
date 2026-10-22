@@ -11,6 +11,7 @@ select
     lower(trim(loyalty_status)) as loyalty_status,
     cast(created_at as date) as created_at,
     cast(updated_at as date) as updated_at,
-    lower(trim(source_system)) as source_system
+    lower(trim(source_system)) as source_system,
+    _ingestion_timestamp
 
 from {{ source('bronze', 'loyalty_accounts') }}
