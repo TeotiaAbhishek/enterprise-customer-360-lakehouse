@@ -8,7 +8,10 @@ with ranked as (
         *,
         row_number() over (
             partition by customer_id
-            order by updated_at desc nulls last
+            order by
+                case when updated_at > current_timestamp() then 1 else 0 end,  -- future-dated rows lose
+                updated_at desc nulls last,
+                _ingestion_timestamp desc                                         -- tie-break: latest load wins
         ) as row_num
 
     from {{ ref('stg_customers') }}
