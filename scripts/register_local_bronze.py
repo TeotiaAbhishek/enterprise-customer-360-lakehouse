@@ -7,7 +7,7 @@ so the Spark metastore is created next to the dbt project.
 from pathlib import Path
 
 from pyspark.sql import SparkSession
-
+from pyspark.sql.functions import current_timestamp, input_file_name
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 LANDING_BASE = PROJECT_ROOT / "data" / "landing"
@@ -35,7 +35,11 @@ def main():
     spark.sql("CREATE DATABASE IF NOT EXISTS bronze")
 
     for table_name, folder in TABLES.items():
-        df = spark.read.option("header", True).csv(str(LANDING_BASE / folder / "*.csv"))
+        df = (
+            spark.read.option("header", True).csv(str(LANDING_BASE / folder / "*.csv"))
+            .withColumn("_source_file", input_file_name())
+            .withColumn("_ingestion_timestamp", current_timestamp())
+        )
         df.write.mode("overwrite").saveAsTable(f"bronze.{table_name}")
         print(f"bronze.{table_name}: {spark.table(f'bronze.{table_name}').count():,} rows")
 
