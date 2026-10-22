@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'payment_id',
-    incremental_strategy = 'merge' if target.type == 'databricks' else 'append'
+    incremental_strategy = 'merge' if target.type == 'databricks' else 'append',
+    liquid_clustered_by = ['customer_id', 'payment_date']
 ) }}
 
 select
