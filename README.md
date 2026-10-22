@@ -32,7 +32,7 @@ flowchart LR
     V -- "bronze_ingestion notebook<br/>(config-driven, parameterised)" --> B
     B -- "dbt: staging → intermediate → silver" --> S
     S -- "dbt: gold marts" --> G
-    G --> PBI[Power BI<br/>enterprise360.pbix]
+    G --> PBI[Power BI<br/>Enterprise_Customer_360_Dashboard.pbix]
 ```
 
 **Medallion layers**
@@ -155,7 +155,7 @@ dbt docs generate --profiles-dir . && dbt docs serve
 
 This builds `workspace.staging`, `workspace.silver` and `workspace.gold`. The Bronze catalog can be overridden with `--vars '{bronze_catalog: my_catalog}'`.
 
-5. Open `dashboards/enterprise360.pbix` in Power BI Desktop (it reads the exported Gold CSVs).
+5. Open `dashboards/Enterprise_Customer_360_Dashboard.pbix` in Power BI Desktop (it reads the exported Gold CSVs).
 
 ### Deploy the scheduled job (Databricks Asset Bundle)
 
