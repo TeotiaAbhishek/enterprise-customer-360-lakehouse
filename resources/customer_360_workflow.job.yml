@@ -9,7 +9,7 @@ resources:
 
       email_notifications:
         on_failure:
-          - abhishek.teotia101@gmail.com
+          - ${var.alert_email}
 
       tasks:
         - task_key: bronze_ingestion
@@ -30,7 +30,7 @@ resources:
           dbt_task:
             project_directory: ../dbt/customer_360
             warehouse_id: ${var.warehouse_id}
-            catalog: workspace
+            catalog: ${var.catalog}
             schema: default
             commands:
               - dbt source freshness
