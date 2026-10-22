@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'table'
+    materialized = 'table',
+    liquid_clustered_by = ['state']
 ) }}
 
 with customer_base as (
